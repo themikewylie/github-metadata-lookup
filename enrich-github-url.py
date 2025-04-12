@@ -54,10 +54,14 @@ def get_repo_info(owner, repo):
 # Function to process a single GitHub URL
 def process_single_url(url):
     try:
-        owner, repo = url.split("/")[-2:]
+        url = url.strip()
+        parts = url.split("/")
+        if len(parts) < 2:
+            raise ValueError("URL does not have enough parts.")
+        owner, repo = parts[-2], parts[-1]
         return get_repo_info(owner, repo)
-    except IndexError:
-        print("Invalid GitHub URL. Please check the format.")
+    except Exception as e:
+        print(f"Invalid GitHub URL '{url}': {e}")
         return None
 
 # Function to process multiple GitHub URLs from a file
@@ -67,7 +71,10 @@ def process_multiple_urls(file_path):
         with open(file_path, 'r') as file:
             urls = file.readlines()
             for url in urls:
-                result = process_single_url(url.strip())
+                cleaned_url = url.strip()
+                if not cleaned_url:
+                    continue  # Skip empty lines
+                result = process_single_url(cleaned_url)
                 if result:
                     results.append(result)
     else:
@@ -127,7 +134,6 @@ def main():
             print(f"Stars: {result['stars']}")
             print(f"Watchers: {result['watchers']}")
             print(f"Forks: {result['forks']}")
-
 
 if __name__ == "__main__":
     main()
